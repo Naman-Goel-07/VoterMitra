@@ -46,14 +46,14 @@ export function VerdictCard({ answer, lang, question }: { answer: CardAnswer; la
         <div className="flex items-center justify-center gap-2">
           <span className="text-[#0F2C59] font-serif font-black text-lg">⚖</span>
           <span className="text-xs font-black tracking-widest text-[#0F2C59] uppercase">
-            भारत निर्वाचन आयोग · ELECTION COMMISSION OF INDIA
+            मतदाता मित्र · VOTERMITRA
           </span>
         </div>
         <p className="text-[11px] font-bold text-slate-600 mt-0.5 tracking-tight">
           राष्ट्रीय मतदाता सूची सत्यापन एवं सत्यनिष्ठा प्रमाण-पत्र (Statutory Verification Certificate)
         </p>
         <p className="text-[10px] text-slate-500 font-mono mt-0.5">
-          Pursuant to Representation of the People Act 1950 (Sec 22/23) &amp; DPDP Act 2023
+          Prototype analysis for demonstration
         </p>
       </div>
 
@@ -103,22 +103,6 @@ export function VerdictCard({ answer, lang, question }: { answer: CardAnswer; la
             </ul>
           </div>
         )}
-
-        {/* Cryptographic Seal */}
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3.5 space-y-1.5 text-slate-700">
-          <div className="flex items-center gap-2">
-            <span className="text-emerald-700 text-xs font-black">⛓</span>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#0F2C59]">
-              ब्लॉकचेन सत्यनिष्ठा रजिस्टर (Polygon Amoy Roll Integrity)
-            </span>
-          </div>
-          <p className="text-[11px] font-mono text-slate-600">
-            Master Merkle Root: <span className="font-bold text-slate-900">0x9e4b7c1a8d3f5026b4...</span> (15,308 Electors)
-          </p>
-          <p className="text-[10px] text-slate-500">
-            Smart Contract: <span className="font-mono text-slate-700">0x71C94B2E0a7D53b7A89Ce7B0568B7A19F8a9942B</span> (Block #14892103)
-          </p>
-        </div>
 
         {/* Legal Disclaimer */}
         <p className="border-t border-slate-200 pt-3 text-[11px] text-slate-500 leading-normal">

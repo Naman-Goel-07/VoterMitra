@@ -11,12 +11,12 @@ type Props = { params: Promise<{ id: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const audit = await getClaimAudit(id);
-  if (!audit) return { title: 'VoterMitra · Official Audit Record' };
+  if (!audit) return { title: 'VoterMitra · Audit Result' };
 
   const lang = fromTelegramCode(audit.language_code ?? undefined);
   const label = audit.verdict ? strings[lang].verdicts[audit.verdict] : 'VoterMitra';
   return {
-    title: `${label} · National Electoral Roll Audit Portal`,
+    title: `${label} · VoterMitra`,
     description: audit.official_explanation,
     openGraph: { title: `${label} · VoterMitra`, description: audit.official_explanation },
   };
@@ -39,7 +39,7 @@ export default async function SharedVerdictPage({ params }: Props) {
             <span className="text-sm font-black tracking-wide">मतदाता मित्र (VoterMitra)</span>
           </Link>
           <span className="text-[11px] text-slate-300 font-medium hidden sm:inline">
-            आधिकारिक मतदाता सूची सत्यापन पोर्टल
+            मतदाता सूची विश्लेषण प्रोटोटाइप
           </span>
         </div>
       </div>
@@ -75,7 +75,7 @@ export default async function SharedVerdictPage({ params }: Props) {
           </Link>
 
           <p className="text-[11px] text-slate-500 text-center sm:text-right">
-            डिजिटल व्यक्तिगत डेटा सुरक्षा अधिनियम (DPDP) 2023 के अंतर्गत सुरक्षित।
+            VoterMitra independent prototype
           </p>
         </div>
       </main>

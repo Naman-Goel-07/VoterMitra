@@ -15,12 +15,10 @@ export interface TelegramLangDict {
     verify: string;
     lang: string;
     forms: string;
-    blockchain: string;
     stats: string;
     portal: string;
   };
   formsGuide: string;
-  blockchainSeal: string;
   statsGuide: string;
   verifyPrompt: string;
   portalPrompt: string;
@@ -37,7 +35,6 @@ export interface TelegramLangDict {
       MEDIUM: string;
     };
     evidenceHeader: string;
-    blockchainSeal: string;
     portalLink: string;
     footerHint: string;
   };
@@ -71,7 +68,7 @@ export interface TelegramLangDict {
 }
 
 // Import or re-export from JS representation
-import { BOT_I18N as JS_BOT_I18N } from '../../scripts/telegram_i18n.mjs';
+import { BOT_I18N as JS_BOT_I18N } from './dictionary.mjs';
 
 export const BOT_I18N = JS_BOT_I18N as unknown as Record<LanguageCode, TelegramLangDict>;
 

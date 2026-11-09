@@ -3,11 +3,9 @@ import { Bot, InputFile, InlineKeyboard } from 'grammy';
 import { env } from '../env';
 import { answerQuestion } from '../assistant';
 import { askGeminiAudio } from '../gemini';
-import { fromTelegramCode, type BotLanguage } from './i18n';
-import { getLanguageDict, type TelegramLangDict } from './i18n_dict';
-import { transcribe, synthesize } from '../gnani';
+import { getLanguageDict } from './i18n_dict';
+import { synthesize } from '../gnani';
 import { VOICE_MAP, SUPPORTED_LANGUAGES, type LanguageCode } from '../languages';
-import { REGISTRY_CONTRACT, MASTER_MERKLE_ROOT, EXPLORER_BASE } from '../blockchain/merkle';
 
 let botInstance: Bot | null = null;
 const userLanguageMap = new Map<number, LanguageCode>();
@@ -50,10 +48,9 @@ function getHelpKeyboard(lang: LanguageCode = 'hi-IN'): InlineKeyboard {
     .text(b.lang, 'action:help_lang')
     .row()
     .text(b.forms, 'action:help_forms')
-    .text(b.blockchain, 'action:help_blockchain')
     .row()
     .text(b.stats, 'action:help_stats')
-    .url(b.portal, 'https://voter-mitra-hack.vercel.app');
+    .text(b.portal, 'action:portal');
 }
 
 export function getTelegramBot(): Bot | null {
@@ -72,7 +69,6 @@ export function getTelegramBot(): Bot | null {
       { command: 'verify', description: '🔍 Verify roll claim (दावा या प्रश्न जांचें)' },
       { command: 'language', description: '🌐 Change language (10 Indian Languages)' },
       { command: 'forms', description: '📋 ECI Forms Guide (फॉर्म 6, 7, 8, 6A)' },
-      { command: 'blockchain', description: '⛓️ On-chain Polygon roll proof (ब्लॉकचेन प्रमाण)' },
       { command: 'stats', description: '📊 Assembly roll audit statistics (ऑडिट आंकड़े)' },
       { command: 'portal', description: '🏛️ Official web portal link (वेब पोर्टल)' },
     ])
@@ -109,13 +105,6 @@ export function getTelegramBot(): Bot | null {
     await ctx.reply(dict.formsGuide, { parse_mode: 'Markdown' });
   });
 
-  // Command /blockchain
-  bot.command('blockchain', async (ctx) => {
-    const lang = getUserLang(ctx.from?.id, ctx.from?.language_code);
-    const dict = getLanguageDict(lang);
-    await ctx.reply(dict.blockchainSeal, { parse_mode: 'Markdown' });
-  });
-
   // Command /stats
   bot.command('stats', async (ctx) => {
     const lang = getUserLang(ctx.from?.id, ctx.from?.language_code);
@@ -125,9 +114,7 @@ export function getTelegramBot(): Bot | null {
 
   // Command /portal
   bot.command('portal', async (ctx) => {
-    const lang = getUserLang(ctx.from?.id, ctx.from?.language_code);
-    const dict = getLanguageDict(lang);
-    await ctx.reply(dict.portalPrompt, { parse_mode: 'Markdown' });
+    await ctx.reply(env().PUBLIC_BASE_URL ?? 'The web portal URL is not configured.');
   });
 
   // Command /language
@@ -203,8 +190,8 @@ export function getTelegramBot(): Bot | null {
       await ctx.reply(dict.actionPrompts.lang, { reply_markup: getLanguageKeyboard() });
     } else if (action === 'help_forms') {
       await ctx.reply(dict.formsGuide, { parse_mode: 'Markdown' });
-    } else if (action === 'help_blockchain') {
-      await ctx.reply(dict.blockchainSeal, { parse_mode: 'Markdown' });
+    } else if (action === 'portal') {
+      await ctx.reply(env().PUBLIC_BASE_URL ?? 'The web portal URL is not configured.');
     } else if (action === 'help_stats') {
       await ctx.reply(dict.statsGuide, { parse_mode: 'Markdown' });
     }
@@ -232,14 +219,8 @@ export function getTelegramBot(): Bot | null {
         dict.queryLabels.verdicts.GUIDANCE;
       const confStr =
         answer.confidence === 'MEDIUM' ? dict.queryLabels.confidence.MEDIUM : dict.queryLabels.confidence.HIGH;
-      const baseUrl = env().PUBLIC_BASE_URL || 'https://voter-mitra-hack.vercel.app';
-      const shareUrl = answer.auditId ? `\n\n🔗 *${dict.queryLabels.portalLink}* ${baseUrl}/c/${answer.auditId}` : '';
-      const isEn = lang === 'en-IN';
-      const bcProof =
-        `\n\n⛓️ *${isEn ? 'On-Chain Electoral Roll Seal (Polygon Amoy PoS)' : 'मतदाता सूची ब्लॉकचेन सत्यनिष्ठा रजिस्टर'}*\n` +
-        `• *Master Merkle Root:* \`${MASTER_MERKLE_ROOT.slice(0, 20)}...\` (15,308 Electors)\n` +
-        `• *Smart Contract:* \`${REGISTRY_CONTRACT}\` · Block #14892103\n` +
-        `🔗 *${isEn ? 'Verify on Explorer' : 'ब्लॉकचेन प्रमाण देखें'}:* ${EXPLORER_BASE}/address/${REGISTRY_CONTRACT}`;
+      const baseUrl = env().PUBLIC_BASE_URL;
+      const shareUrl = baseUrl && answer.auditId ? `\n\n🔗 *${dict.queryLabels.portalLink}* ${baseUrl}/c/${answer.auditId}` : '';
 
       const replyText =
         `🔍 *${verdictStr}*\n` +
@@ -247,7 +228,6 @@ export function getTelegramBot(): Bot | null {
         `${answer.summary}\n\n` +
         `*${dict.queryLabels.evidenceHeader}*\n` +
         answer.reasoning.map((r) => `• ${r}`).join('\n') +
-        bcProof +
         shareUrl +
         `\n\n🌐 _${dict.queryLabels.footerHint}_`;
 
@@ -334,14 +314,8 @@ export function getTelegramBot(): Bot | null {
         dict.queryLabels.verdicts.GUIDANCE;
       const confStr =
         answer.confidence === 'MEDIUM' ? dict.queryLabels.confidence.MEDIUM : dict.queryLabels.confidence.HIGH;
-      const baseUrl = env().PUBLIC_BASE_URL || 'https://voter-mitra-hack.vercel.app';
-      const shareUrl = answer.auditId ? `\n\n🔗 *${dict.queryLabels.portalLink}* ${baseUrl}/c/${answer.auditId}` : '';
-      const isEn = lang === 'en-IN';
-      const bcProof =
-        `\n\n⛓️ *${isEn ? 'On-Chain Electoral Roll Seal (Polygon Amoy PoS)' : 'मतदाता सूची ब्लॉकचेन सत्यनिष्ठा रजिस्टर'}*\n` +
-        `• *Master Merkle Root:* \`${MASTER_MERKLE_ROOT.slice(0, 20)}...\` (15,308 Electors)\n` +
-        `• *Smart Contract:* \`${REGISTRY_CONTRACT}\` · Block #14892103\n` +
-        `🔗 *${isEn ? 'Verify on Explorer' : 'ब्लॉकचेन प्रमाण देखें'}:* ${EXPLORER_BASE}/address/${REGISTRY_CONTRACT}`;
+      const baseUrl = env().PUBLIC_BASE_URL;
+      const shareUrl = baseUrl && answer.auditId ? `\n\n🔗 *${dict.queryLabels.portalLink}* ${baseUrl}/c/${answer.auditId}` : '';
 
       const replyText =
         `🗣️ *${dict.youAsked}:* "${questionText}"\n\n` +
@@ -350,7 +324,6 @@ export function getTelegramBot(): Bot | null {
         `${answer.summary}\n\n` +
         `*${dict.queryLabels.evidenceHeader}*\n` +
         answer.reasoning.map((r) => `• ${r}`).join('\n') +
-        bcProof +
         shareUrl +
         `\n\n🌐 _${dict.queryLabels.footerHint}_`;
 

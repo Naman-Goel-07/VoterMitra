@@ -1,3 +1,4 @@
+import { requireReviewer } from '@/lib/auth';
 import { listFlags } from '@/lib/dashboard';
 import { ANOMALY_TYPES, SEVERITIES, STATUSES } from '@/lib/labels';
 import { QueueView } from '@/components/queue-view';
@@ -9,6 +10,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 const STATUS_FILTERS = ['OPEN', 'ALL', ...STATUSES] as const;
 
 export default async function QueuePage({ searchParams }: { searchParams: SearchParams }) {
+  await requireReviewer();
   const sp = await searchParams;
   const pick = <T extends string>(key: string, allowed: readonly T[]): T | undefined => {
     const raw = sp[key];

@@ -27,7 +27,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline-block text-[11px] text-slate-600">
-              ECI Roll Verification &amp; Field Remediation Console
+              Electoral roll review console
             </span>
             <form action={logout}>
               <button
@@ -49,9 +49,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between text-xs text-slate-300 gap-2">
           <div className="flex items-center gap-2">
             <span className="text-base text-amber-300">☸</span>
-            <span className="font-semibold text-white">भारत निर्वाचन आयोग | ELECTION COMMISSION OF INDIA</span>
+            <span className="font-semibold text-white">मतदाता मित्र | VoterMitra</span>
           </div>
-          <div>National Voter Services Portal: NIC Standards &amp; Digital India Compliance</div>
+          <div>Independent electoral-roll audit prototype</div>
         </div>
       </footer>
     </div>

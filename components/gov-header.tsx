@@ -73,11 +73,11 @@ export function GovHeader({ currentLang: propLang, onLanguageChange: propOnChang
           <div className="flex items-center gap-2">
             <span className="inline-block w-3.5 h-2.5 bg-gradient-to-b from-[#FF671F] via-white to-[#046A38] rounded-[1px] shadow-xs" />
             <span className="font-semibold text-white tracking-wide">
-              {activeLang === 'en-IN' ? 'Government of India' : 'भारत सरकार | Government of India'}
+              {activeLang === 'en-IN' ? 'Independent prototype' : 'स्वतंत्र प्रोटोटाइप'}
             </span>
             <span className="hidden sm:inline-block text-slate-400">|</span>
             <span className="hidden sm:inline-block text-slate-200">
-              {activeLang === 'en-IN' ? 'National Electoral Roll Transparency Portal' : 'राष्ट्रीय मतदाता सेवा एवं सत्यापन पोर्टल'}
+              {activeLang === 'en-IN' ? 'Electoral roll analysis demo' : 'मतदाता सूची विश्लेषण डेमो'}
             </span>
           </div>
 
@@ -141,8 +141,8 @@ export function GovHeader({ currentLang: propLang, onLanguageChange: propOnChang
             {/* Ashoka Chakra & ECI Insignia Badge */}
             <div className="relative flex-shrink-0 w-12 h-12 rounded-full bg-[#0F2C59] border-2 border-amber-500/80 p-0.5 shadow-sm flex items-center justify-center text-white">
               <div className="w-10 h-10 rounded-full border border-amber-300/40 flex flex-col items-center justify-center">
-                <span className="text-base leading-none">☸</span>
-                <span className="text-[7.5px] font-bold text-amber-200 uppercase tracking-tight mt-0.5">ECI</span>
+                <span className="text-base leading-none">⚖</span>
+                <span className="text-[7.5px] font-bold text-amber-200 uppercase tracking-tight mt-0.5">VM</span>
               </div>
             </div>
 
@@ -153,7 +153,7 @@ export function GovHeader({ currentLang: propLang, onLanguageChange: propOnChang
                 </h1>
                 <span className="text-slate-300 font-light">|</span>
                 <span className="text-xs sm:text-sm font-semibold text-[#0F2C59] tracking-wide uppercase">
-                  Election Commission of India
+                  Electoral roll analysis
                 </span>
               </div>
               <div className="text-xs sm:text-sm font-bold text-[#C2410C] mt-0.5">
@@ -165,26 +165,6 @@ export function GovHeader({ currentLang: propLang, onLanguageChange: propOnChang
             </div>
           </div>
 
-          {/* Right: Official Badges & Audit Status */}
-          <div className="flex items-center gap-3">
-            <div className="hidden lg:flex flex-col items-end border-r border-slate-200 pr-3 text-right">
-              <span className="inline-flex items-center gap-1.5 rounded bg-emerald-50 text-emerald-800 px-2 py-0.5 text-[11px] font-bold border border-emerald-200">
-                <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                100% Recall Verified
-              </span>
-              <span className="text-[10px] text-slate-600 mt-0.5">
-                दिल्ली रोल ऑडिट: 15,308 मतदाता
-              </span>
-            </div>
-
-            {/* Emblem Seal Motif */}
-            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded px-3 py-1.5 shadow-2xs">
-              <div className="text-center">
-                <div className="text-[11px] font-bold text-slate-900 leading-tight">सत्यमेव जयते</div>
-                <div className="text-[8px] uppercase tracking-wider text-slate-600">Digital India</div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 

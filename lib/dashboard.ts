@@ -6,7 +6,7 @@ import { getConstituencySummary, listConstituencies } from './queries';
 import { DECISION_META, type ReviewDecision } from './labels';
 import type { Reviewer } from './auth';
 import type { Confidence, Verdict } from './assistant';
-import { FALLBACK_FLAGS, FALLBACK_SCORECARD } from './fallback-data';
+import { FALLBACK_FLAGS } from './fallback-data';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isUuid = (value: string) => UUID_RE.test(value);
@@ -425,11 +425,9 @@ export async function recordReview(input: {
       );
     });
   } catch (err) {
-    console.warn('[dashboard] recordReview updating in-memory state:', err instanceof Error ? err.message : err);
-    const f = FALLBACK_FLAGS.find((x) => x.id === input.flagId);
-    if (f) {
-      f.status = DECISION_META[input.decision].status;
-    }
+    const demoFlag = FALLBACK_FLAGS.find((flag) => flag.id === input.flagId);
+    if (env().DATABASE_URL || !demoFlag) throw err;
+    demoFlag.status = DECISION_META[input.decision].status;
   }
 }
 

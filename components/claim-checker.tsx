@@ -17,20 +17,20 @@ interface ClaimCheckerProps {
   onLanguageChange?: (lang: LanguageCode) => void;
 }
 
-// Categorized interactive inquiries across the official 15,308 elector dataset
+// Demo inquiries grouped by feature
 const INQUIRY_CATEGORIES = [
   {
     id: 'elector',
     icon: '👤',
     labelEn: 'Elector & EPIC Search',
     labelHi: 'मतदाता व पहचान पत्र खोज',
-    hintEn: 'Search any citizen or Voter ID across 15,308 verified Delhi records',
-    hintHi: 'दिल्ली के 15,308 मतदाताओं में से किसी भी नागरिक या पहचान पत्र की खोज करें',
+    hintEn: 'Search the fictional demo by name or sample voter ID',
+    hintHi: 'काल्पनिक डेमो रिकॉर्ड में नाम या मतदाता पहचान संख्या खोजें',
     queries: [
-      { q: 'Is Yuv Jindal present in the list?', label: 'Yuv Jindal (AC 58 Kundan Nagar)' },
-      { q: 'रोहिणी में अमित कुमार', label: 'Amit Kumar (AC 13 Rohini)' },
-      { q: 'IPS3346004', label: 'EPIC: IPS3346004' },
-      { q: 'Sarthak Prasad', label: 'Sarthak Prasad (AC 58)' },
+      { q: 'Is Sample Asha present in the list?', label: 'Sample Asha (active demo record)' },
+      { q: 'रोहिणी में Sample Asha', label: 'Sample Asha (AC 13 Rohini)' },
+      { q: 'ZZZ0000003', label: 'EPIC: ZZZ0000003' },
+      { q: 'Sample Noor', label: 'Sample Noor (planted duplicate)' },
     ],
   },
   {
@@ -41,7 +41,7 @@ const INQUIRY_CATEGORIES = [
     hintEn: 'Audit targeted deletions and statistical shifts under Rule 21A',
     hintHi: 'नियम 21A के तहत संदिग्ध विलोपन व सांख्यिकीय विचलनों की जांच',
     queries: [
-      { q: 'Check status for Vanshika Kain', label: 'Vanshika Kain (Part 4 Deletion Anomaly)' },
+      { q: 'Check status for Sample Vikram', label: 'Sample Vikram (removed demo record)' },
       { q: 'Were 49 women electors deleted in Part 4?', label: 'Part 4 (+4.9σ Female Deletion Anomaly)' },
       { q: 'Check cross-AC duplicate entries', label: 'Cross-AC Duplicate EPIC Check (AC 6 & 13)' },
     ],
@@ -54,8 +54,8 @@ const INQUIRY_CATEGORIES = [
     hintEn: 'Detect abnormal voter density at single addresses or student hostels',
     hintHi: 'एकल पते पर अत्यधिक पंजीकरण या हॉस्टल संकेंद्रण की जांच',
     queries: [
-      { q: 'How many electors are registered at Plot 12-B?', label: 'Plot 12-B Basement (43 Electors Cluster)' },
-      { q: 'Check Part 1 Kundan Nagar polling station', label: 'Part 1 Kundan Nagar (Lovely Public School)' },
+      { q: 'How many electors are registered at a fictional address?', label: 'a fictional address (43 Electors Cluster)' },
+      { q: 'Check Part 1 Kundan Nagar polling station', label: 'Part 1 demo polling station' },
     ],
   },
   {
@@ -63,7 +63,7 @@ const INQUIRY_CATEGORIES = [
     icon: '📜',
     labelEn: 'Statutory ECI Rules',
     labelHi: 'विधिक नियम व अधिकार',
-    hintEn: 'Authoritative guidance on Form 6, 7, 8, and voting without EPIC',
+    hintEn: 'General information on Forms 6, 7, and 8',
     hintHi: 'फॉर्म 6, 7, 8 तथा बिना पहचान पत्र मतदान के विधिक नियम',
     queries: [
       { q: 'How to register a new voter using Form 6?', label: 'Form 6: New Voter Registration (Age 18+)' },
@@ -161,10 +161,10 @@ export function ClaimChecker({ currentLang: propLang }: ClaimCheckerProps) {
       maxTimeoutRef.current = setTimeout(() => {
         stopVoiceRecording();
       }, 25000);
-    } catch (micErr: any) {
+    } catch (micErr) {
       console.warn('[mic] getUserMedia failed:', micErr);
       setIsListening(false);
-      if (micErr.name === 'NotAllowedError' || micErr.name === 'PermissionDeniedError') {
+      if (micErr instanceof Error && ['NotAllowedError', 'PermissionDeniedError'].includes(micErr.name)) {
         setError('माइक्रोफोन अनुमति अस्वीकृत है। कृपया ब्राउज़र सेटिंग्स में माइक्रोफोन अनुमति चालू करें।');
       } else {
         setError('माइक्रोफोन एक्सेस करने में त्रुटि। कृपया लिखकर प्रश्न पूछें।');
@@ -237,7 +237,7 @@ export function ClaimChecker({ currentLang: propLang }: ClaimCheckerProps) {
       }
 
       setResult({ answer: data.answer, question: data.transcript || question, audioUrl });
-    } catch (err: any) {
+    } catch (err) {
       setError(err instanceof Error ? err.message : 'सर्वर से संपर्क करने में त्रुटि। कृपया पुनः प्रयास करें।');
     } finally {
       setBusy(false);
@@ -270,10 +270,10 @@ export function ClaimChecker({ currentLang: propLang }: ClaimCheckerProps) {
       let audioUrl: string | null = null;
       try {
         const spokenText = `${data.answer.spokenSummary || data.answer.summary}`;
-        const ttsRes = await fetch('/api/dev/tts', {
+        const ttsRes = await fetch('/api/speech', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: spokenText, language: lang, format: 'wav' }),
+          body: JSON.stringify({ text: spokenText.slice(0, 400), language: lang }),
         });
         if (ttsRes.ok) {
           const blob = await ttsRes.blob();
@@ -321,7 +321,7 @@ export function ClaimChecker({ currentLang: propLang }: ClaimCheckerProps) {
       ? `${window.location.origin}/c/${result.answer.auditId}`
       : window.location.href;
     const verdictText = result.answer.verdict === 'VERIFIED' ? '✅ प्रमाणित (VERIFIED)' : '⚠️ विवादित (DISPUTED)';
-    const text = `🇮🇳 *भारत निर्वाचन आयोग : मतदाता मित्र (VoterMitra)*\n\n📌 *सवाल:* "${result.question}"\n\n🔍 *निष्कर्ष:* ${verdictText}\n${result.answer.summary}\n\n🔗 आधिकारिक रिपोर्ट देखें: ${url}`;
+    const text = `🇮🇳 *मतदाता मित्र (VoterMitra prototype)*\n\n📌 *सवाल:* "${result.question}"\n\n🔍 *निष्कर्ष:* ${verdictText}\n${result.answer.summary}\n\n🔗 विश्लेषण देखें: ${url}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
   };
 
@@ -353,8 +353,8 @@ export function ClaimChecker({ currentLang: propLang }: ClaimCheckerProps) {
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
                 {lang === 'en-IN'
-                  ? 'Search ANY elector by Name or EPIC ID across 15,308 verified records, or ask any statutory rule question.'
-                  : '15,308 रिकॉर्ड्स में से किसी भी नागरिक का नाम/EPIC खोजें अथवा चुनावी प्रक्रिया व नियमों पर सवाल पूछें।'}
+                  ? 'Search a fictional record by name or sample voter ID, or ask about the electoral-roll process.'
+                  : 'काल्पनिक रिकॉर्ड में नाम या पहचान संख्या खोजें, या चुनावी प्रक्रिया पर सवाल पूछें।'}
               </p>
             </div>
           </div>
@@ -374,8 +374,8 @@ export function ClaimChecker({ currentLang: propLang }: ClaimCheckerProps) {
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder={
                   lang === 'en-IN'
-                    ? 'Type any Name (e.g. Yuv Jindal), EPIC ID (e.g. IPS3346004), or election query…'
-                    : 'कोई भी नाम (उदा. युव जिंदल), पहचान पत्र (उदा. IPS3346004) या सवाल लिखें…'
+                    ? 'Try Sample Asha, ZZZ0000001, or an election question…'
+                    : 'Sample Asha, ZZZ0000001, या कोई सवाल लिखें…'
                 }
                 disabled={busy || isListening}
                 className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-2xs focus:border-[#0F2C59] focus:outline-none focus:ring-1 focus:ring-[#0F2C59] disabled:bg-slate-50 transition"
@@ -546,7 +546,7 @@ export function ClaimChecker({ currentLang: propLang }: ClaimCheckerProps) {
           {/* Question & Finding */}
           <div>
             <div className="text-xs font-semibold text-slate-500">सत्यापित प्रश्न (Audited Query):</div>
-            <div className="text-sm font-bold text-slate-900 mt-0.5 italic">"{result.question}"</div>
+            <div className="text-sm font-bold text-slate-900 mt-0.5 italic">&ldquo;{result.question}&rdquo;</div>
 
             {/* Structured Elector Card View & Clean Markdown Typography */}
             <div className="mt-3 bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200">
@@ -600,60 +600,6 @@ export function ClaimChecker({ currentLang: propLang }: ClaimCheckerProps) {
             </div>
           )}
 
-          {/* Official Digital Gazette Verification Certificate (NIC / ECI Standard) */}
-          {result.answer.blockchain && (
-            <div className="rounded-lg bg-slate-50 border-2 border-slate-300 p-4 sm:p-5 text-slate-900 text-xs space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#15803D]" />
-                  <span className="font-bold text-[#0F2C59] tracking-wide text-xs">
-                    📜 {lang === 'en-IN' ? 'Digital Electoral Gazette Roll Seal' : 'आधिकारिक डिजिटल निर्वाचक नामावली राजपत्र प्रमाण'}
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono font-bold text-[#15803D] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
-                  Polygon Amoy PoS: Sealed ✓
-                </span>
-              </div>
-
-              <p className="text-[11px] text-slate-600 leading-relaxed">
-                {lang === 'en-IN'
-                  ? 'This elector record is cryptographically anchored to the Master Merkle Root on Polygon Proof of Stake, ensuring tamper-evident statutory integrity under Sections 22 and 23 of the Representation of the People Act, 1950.'
-                  : 'यह मतदाता रिकॉर्ड जनप्रतिनिधित्व अधिनियम 1950 की धारा 22 एवं 23 के तहत मर्कल ट्री द्वारा पॉलीगॉन प्रूफ ऑफ स्टेक पर गणितीय रूप से सीलबंद एवं सुरक्षित है।'}
-              </p>
-
-              <div className="grid sm:grid-cols-2 gap-2 text-[11px] font-mono">
-                <div className="bg-white p-2.5 rounded border border-slate-300">
-                  <span className="text-slate-500 block text-[9px] font-sans uppercase tracking-wider font-semibold">Master Merkle Root Hash</span>
-                  <span className="text-slate-900 truncate block font-bold text-[10px]">
-                    {result.answer.blockchain.merkleRoot}
-                  </span>
-                </div>
-                <div className="bg-white p-2.5 rounded border border-slate-300">
-                  <span className="text-slate-500 block text-[9px] font-sans uppercase tracking-wider font-semibold">Smart Contract Registry</span>
-                  <span className="text-slate-900 truncate block font-bold text-[10px]">
-                    {result.answer.blockchain.contractAddress}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between text-[11px] pt-1 text-slate-600 border-t border-slate-200">
-                <span>
-                  Anchor Block: <strong className="text-slate-900">#{result.answer.blockchain.blockNumber}</strong> (Polygon PoS)
-                </span>
-                {result.answer.blockchain.explorerUrl && (
-                  <a
-                    href={result.answer.blockchain.explorerUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[#0F2C59] hover:underline font-bold"
-                  >
-                    {lang === 'en-IN' ? 'Verify On-Chain on Polygonscan ↗' : 'पॉलीगॉनस्कैन पर ऑन-चेन सत्यापन देखें ↗'}
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* Social Share & Copy Footer */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
             <div className="flex items-center gap-2">
@@ -674,7 +620,7 @@ export function ClaimChecker({ currentLang: propLang }: ClaimCheckerProps) {
             </div>
 
             <div className="text-[11px] text-slate-500 italic">
-              {lang === 'en-IN' ? 'ECI Statutory Roll Verification Protocol' : 'भारत निर्वाचन आयोग विधिक नामावली सत्यापन प्रोटोकॉल'}
+              {lang === 'en-IN' ? 'Electoral Roll Analysis Prototype' : 'मतदाता सूची विश्लेषण प्रोटोटाइप'}
             </div>
           </div>
         </div>

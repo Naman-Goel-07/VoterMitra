@@ -4,7 +4,7 @@ import type { LanguageCode } from './languages';
 export interface GeminiAuditResult {
   verdict: 'VERIFIED' | 'DISPUTED' | 'NOT_PROVABLE';
   confidence: 'HIGH' | 'MEDIUM';
-  category: 'STATUTORY_GUIDE' | 'ANOMALY_AUDIT' | 'DEMOGRAPHIC_STATS' | 'BLOCKCHAIN_VERIFY';
+  category: 'STATUTORY_GUIDE' | 'ANOMALY_AUDIT' | 'DEMOGRAPHIC_STATS';
   summary: string;
   spokenSummary: string;
   reasoning: string[];
@@ -26,26 +26,19 @@ KNOWLEDGE BASE & GROUND TRUTH:
    - Voting without physical EPIC: A registered voter whose name appears in the voter list can vote using 12 approved photo identity cards (Aadhaar, Passport, Driving License, PAN card, Service ID, Bank passbook with photo, MNREGA job card, Health insurance smart card, Pension document with photo).
    - Special Summary Revision (SSR): Annual statutory process for roll revision with draft publication, claims & objections period, and final publication.
 
-2. Delhi Assembly Electoral Roll Mathematical Audit Data:
+2. Historical Delhi electoral-roll benchmark (synthetic revision experiment):
    - Exactly 15,308 electors audited across 23 booths in 4 constituencies: AC 6 (Rithala), AC 13 (Rohini), AC 44 (R.K. Puram), AC 58 (Laxmi Nagar).
    - Total baseline electors: 14,603; revised electors: 15,016; deletions: 421; additions: 834.
-   - 49 verified statistical anomalies flagged with 100% recall (40/40 planted ground-truth cases caught, zero false removals).
-   - Part 4 (AC 13 Rohini): 49 young female voters deleted (Modified Z-Score: +4.9 sigma). Two competing hypotheses: Form 8 post-marriage relocation vs administrative omission. BLO door-to-door inspection issued.
-   - Plot 12-B Basement (AC 13 Part 4): 43 electors registered at single address (surname entropy 48%). Flagged as address overcrowding; plausible cause: student hostel / PG.
+   - 49 candidate flags reported with 100% recall (40/40 planted ground-truth cases caught, zero false removals).
+   - Part 4 (AC 13 Rohini): 49 young female voters deleted (Modified Z-Score: +4.9 sigma). Two competing hypotheses: Form 8 post-marriage relocation vs administrative omission. Field verification would be needed to resolve the scenario.
    - Cross-AC Duplicate EPICs: 8 suspect duplicate pairs identified between AC 6 and AC 13 with Levenshtein fuzzy similarity score 0.94.
-
-3. Blockchain Roll Integrity (Polygon Amoy Testnet):
-   - All 15,308 elector records are hashed into cryptographic Merkle Trees.
-   - Master Roll Merkle Root: 0x9e4b7c1a8d3f5026b4819a3c7e0f2d5a8b1c4e7f9a2b5d8c1e4f7a0b3c6d9e2f.
-   - Smart Contract: ElectoralRollRegistry (0x71C94B2E0a7D53b7A89Ce7B0568B7A19F8a9942B).
-   - Prevents silent roll tampering, post-deadline modifications, and ghost additions.
 
 RESPONSE FORMAT REQUIREMENTS:
 Always respond with a valid JSON object strictly matching this schema:
 {
   "verdict": "VERIFIED" | "DISPUTED" | "NOT_PROVABLE",
   "confidence": "HIGH" | "MEDIUM",
-  "category": "STATUTORY_GUIDE" | "ANOMALY_AUDIT" | "DEMOGRAPHIC_STATS" | "BLOCKCHAIN_VERIFY",
+  "category": "STATUTORY_GUIDE" | "ANOMALY_AUDIT" | "DEMOGRAPHIC_STATS",
   "summary": "Clear, comprehensive answer in the requested language (2-4 sentences)",
   "spokenSummary": "Concise 1-2 sentence spoken summary for voice note synthesis",
   "reasoning": ["Bullet point 1 with legal or mathematical basis", "Bullet point 2 with concrete details"],
@@ -74,7 +67,7 @@ export async function askGemini(
   query: string,
   lang: LanguageCode = 'hi-IN',
 ): Promise<GeminiAuditResult | null> {
-  const apiKey = env().GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+  const apiKey = env().GEMINI_API_KEY;
   if (!apiKey) return null;
 
   const langNames: Record<string, string> = {
@@ -145,7 +138,7 @@ export async function askGeminiAudio(
   mimeType: string = 'audio/ogg',
   lang: LanguageCode = 'hi-IN',
 ): Promise<GeminiAudioAuditResult | null> {
-  const apiKey = env().GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+  const apiKey = env().GEMINI_API_KEY;
   if (!apiKey) return null;
 
   const langNames: Record<string, string> = {
@@ -178,18 +171,12 @@ KNOWLEDGE BASE & GROUND TRUTH:
    - Voting without physical EPIC: A registered voter whose name appears in the voter list can vote using 12 approved photo identity cards (Aadhaar, Passport, Driving License, PAN card, Service ID, Bank passbook with photo, MNREGA job card, Health insurance smart card, Pension document with photo).
    - Special Summary Revision (SSR): Annual statutory process for roll revision with draft publication, claims & objections period, and final publication.
 
-2. Delhi Assembly Electoral Roll Mathematical Audit Data:
+2. Historical Delhi electoral-roll benchmark (synthetic revision experiment):
    - Exactly 15,308 electors audited across 23 booths in 4 constituencies: AC 6 (Rithala), AC 13 (Rohini), AC 44 (R.K. Puram), AC 58 (Laxmi Nagar).
    - Total baseline electors: 14,603; revised electors: 15,016; deletions: 421; additions: 834.
-   - 49 verified statistical anomalies flagged with 100% recall (40/40 planted ground-truth cases caught, zero false removals).
-   - Part 4 (AC 13 Rohini): 49 young female voters deleted (Modified Z-Score: +4.9 sigma). Two competing hypotheses: Form 8 post-marriage relocation vs administrative omission. BLO door-to-door inspection issued.
-   - Plot 12-B Basement (AC 13 Part 4): 43 electors registered at single address (surname entropy 48%). Flagged as address overcrowding; plausible cause: student hostel / PG.
+   - 49 candidate flags reported with 100% recall (40/40 planted ground-truth cases caught, zero false removals).
+   - Part 4 (AC 13 Rohini): 49 young female voters deleted (Modified Z-Score: +4.9 sigma). Two competing hypotheses: Form 8 post-marriage relocation vs administrative omission. Field verification would be needed to resolve the scenario.
    - Cross-AC Duplicate EPICs: 8 suspect duplicate pairs identified between AC 6 and AC 13 with Levenshtein fuzzy similarity score 0.94.
-
-3. Blockchain Roll Integrity (Polygon Amoy Testnet):
-   - All 15,308 elector records are hashed into cryptographic Merkle Trees.
-   - Master Roll Merkle Root: 0x9e4b7c1a8d3f5026b4819a3c7e0f2d5a8b1c4e7f9a2b5d8c1e4f7a0b3c6d9e2f.
-   - Smart Contract: ElectoralRollRegistry (0x71C94B2E0a7D53b7A89Ce7B0568B7A19F8a9942B).
 
 TASK:
 1. Listen carefully to the voter's voice query in the provided audio file.
@@ -221,7 +208,7 @@ Always respond with a valid JSON object strictly matching this schema:
   "transcription": "Exact words spoken by user in the audio",
   "verdict": "VERIFIED" | "DISPUTED" | "NOT_PROVABLE",
   "confidence": "HIGH" | "MEDIUM",
-  "category": "STATUTORY_GUIDE" | "ANOMALY_AUDIT" | "DEMOGRAPHIC_STATS" | "BLOCKCHAIN_VERIFY",
+  "category": "STATUTORY_GUIDE" | "ANOMALY_AUDIT" | "DEMOGRAPHIC_STATS",
   "summary": "Clear, comprehensive answer in ${langName} (2-4 sentences)",
   "spokenSummary": "Concise 1-2 sentence spoken summary for voice note synthesis in ${langName}",
   "reasoning": ["Bullet point 1 with legal or mathematical basis", "Bullet point 2 with concrete details"],

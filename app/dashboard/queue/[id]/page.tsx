@@ -7,7 +7,8 @@ export const dynamic = 'force-dynamic';
 
 export default async function FlagPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [reviewer, detail] = await Promise.all([requireReviewer(), getFlagDetail(id)]);
+  const reviewer = await requireReviewer();
+  const detail = await getFlagDetail(id);
   if (!detail) notFound();
 
   return (

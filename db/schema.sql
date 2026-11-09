@@ -1,21 +1,11 @@
 -- ============================================================================
 -- VOTERMITRA: Supabase Database Schema
--- Run this script in the Supabase SQL Editor (Dashboard -> SQL Editor -> New Query)
+-- Bootstrap an empty database. For existing databases, apply migrations only.
 -- ============================================================================
 
 -- Enable UUID & pg_trgm extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";
-
--- Drop existing tables if re-initializing (safe order)
-DROP TABLE IF EXISTS claim_audits CASCADE;
-DROP TABLE IF EXISTS reviews CASCADE;
-DROP TABLE IF EXISTS flags CASCADE;
-DROP TABLE IF EXISTS voters_v2 CASCADE;
-DROP TABLE IF EXISTS voters_v1 CASCADE;
-DROP TABLE IF EXISTS part_sections CASCADE;
-DROP TABLE IF EXISTS roll_parts CASCADE;
-DROP TABLE IF EXISTS constituencies CASCADE;
 
 -- 1. CONSTITUENCIES
 CREATE TABLE constituencies (
@@ -190,7 +180,6 @@ CREATE TABLE claim_audits (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Enable Row Level Security (RLS) with open read access for demo purposes
 ALTER TABLE constituencies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE roll_parts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE part_sections ENABLE ROW LEVEL SECURITY;
@@ -199,14 +188,4 @@ ALTER TABLE voters_v2 ENABLE ROW LEVEL SECURITY;
 ALTER TABLE flags ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE claim_audits ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Public Read Access Constituencies" ON constituencies FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Roll Parts" ON roll_parts FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Part Sections" ON part_sections FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Voters V1" ON voters_v1 FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Voters V2" ON voters_v2 FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Flags" ON flags FOR SELECT USING (true);
-CREATE POLICY "Public Read Access Reviews" ON reviews FOR SELECT USING (true);
-CREATE POLICY "Public Write Access Reviews" ON reviews FOR INSERT WITH CHECK (true);
-CREATE POLICY "Public Read Access Claim Audits" ON claim_audits FOR SELECT USING (true);
-CREATE POLICY "Public Write Access Claim Audits" ON claim_audits FOR INSERT WITH CHECK (true);
+ALTER TABLE benchmark_scenarios ENABLE ROW LEVEL SECURITY;

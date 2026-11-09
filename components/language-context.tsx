@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import {
-  SUPPORTED_LANGUAGES,
   I18N_DICTIONARY,
   type LanguageCode,
   type LangUI,
@@ -54,22 +53,24 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<LanguageCode>('hi-IN');
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('votermitra_lang') as LanguageCode;
-      if (saved && I18N_DICTIONARY[saved]) {
-        setLangState(saved);
+    const frame = requestAnimationFrame(() => {
+      try {
+        const saved = localStorage.getItem('votermitra_lang') as LanguageCode | null;
+        if (saved && Object.hasOwn(I18N_DICTIONARY, saved)) setLangState(saved);
+      } catch {
+        // Storage can be unavailable in restricted browser contexts.
       }
-    } catch {
-      // Ignore
-    }
-
+    });
     const handleStorage = (e: StorageEvent) => {
       if (e.key === 'votermitra_lang' && e.newValue && I18N_DICTIONARY[e.newValue as LanguageCode]) {
         setLangState(e.newValue as LanguageCode);
       }
     };
     window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []);
 
   const setLang = (newLang: LanguageCode) => {

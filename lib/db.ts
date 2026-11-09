@@ -9,16 +9,21 @@ declare global {
 function createPool(): Pool {
   const connectionString = env().DATABASE_URL;
 
+  if (!connectionString) throw new Error('Database is not configured.');
+  const databaseUrl = new URL(connectionString);
+  const local = ['localhost', '127.0.0.1', '[::1]'].includes(databaseUrl.hostname);
+  const sslMode = databaseUrl.searchParams.get('sslmode');
+  const usePlaintext = local && sslMode === 'disable';
+  if (sslMode && !usePlaintext && !['require', 'verify-ca', 'verify-full'].includes(sslMode)) {
+    throw new Error('Database connection must use verified TLS.');
+  }
+
   const pool = new Pool({
     connectionString,
     max: 10,
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 5_000,
-    ssl: connectionString && connectionString.includes('sslmode=disable')
-      ? false
-      : {
-          rejectUnauthorized: false,
-        },
+    ssl: !usePlaintext,
   });
 
   pool.on('error', (err) => {

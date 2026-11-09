@@ -1,5 +1,8 @@
 'use client';
 
+import type { Reviewer } from '@/lib/auth';
+import type { getFlagDetail } from '@/lib/dashboard';
+
 import Link from 'next/link';
 import type { ReviewDecision } from '@/lib/labels';
 import { ANOMALY_LABELS, DECISION_META, REVIEW_DECISIONS, canDecide, formatDateTime } from '@/lib/labels';
@@ -10,11 +13,9 @@ import { useLanguage } from '@/components/language-context';
 
 const humanize = (key: string) => key.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
 
-interface FlagDetailViewProps {
-  flag: any;
-  reviews: any[];
-  reviewer: { name: string; role: any };
-}
+type FlagDetailViewProps = NonNullable<Awaited<ReturnType<typeof getFlagDetail>>> & {
+  reviewer: Reviewer;
+};
 
 export function FlagDetailView({ flag, reviews, reviewer }: FlagDetailViewProps) {
   const { lang, t } = useLanguage();
@@ -122,8 +123,8 @@ export function FlagDetailView({ flag, reviews, reviewer }: FlagDetailViewProps)
         </h2>
         <p className="mb-4 text-xs text-slate-500">
           {lang === 'en-IN'
-            ? 'Names partially redacted for privacy under DPDP Act 2023. Flags evaluate mathematical patterns, not individuals.'
-            : 'गोपनीयता सुरक्षा हेतु नाम आंशिक रूप से छिपे हैं (DPDP Act 2023)। ऑडिट इंजन व्यक्तियों का नहीं बल्कि सांख्यिकीय पैटर्नों का विश्लेषण करता है।'}
+            ? 'Flags identify statistical patterns for review.'
+            : 'फ्लैग समीक्षा के लिए सांख्यिकीय पैटर्न दिखाते हैं।'}
         </p>
         <EvidenceViewer payload={flag.evidence} />
       </Card>

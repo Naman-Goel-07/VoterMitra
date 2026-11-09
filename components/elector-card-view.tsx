@@ -264,7 +264,7 @@ export function ElectorCardView({ text, lang = 'hi-IN' }: ElectorCardViewProps) 
                       <span className="font-mono font-bold bg-white text-slate-900 px-2 py-0.5 rounded border border-slate-300 text-xs">
                         {e.epic || '(None)'}
                       </span>
-                      <span className="text-[10px] text-slate-500 font-medium">🔒 DPDP Masked</span>
+                      <span className="text-[10px] text-slate-500 font-medium">🔒 Demo record</span>
                     </div>
                   </div>
                 </div>

@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
+import { env } from '@/lib/env';
 import { LanguageProvider } from '@/components/language-context';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.PUBLIC_BASE_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(env().PUBLIC_BASE_URL ?? 'http://localhost:3000'),
   title: 'VoterMitra · Electoral Roll Transparency & Anomaly Auditing',
-  description: 'AI-assisted, explainable electoral roll audit and citizen claim verification suite.',
+  description: 'Independent prototype for electoral-roll comparison and anomaly review.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

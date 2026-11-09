@@ -6,7 +6,7 @@ import { ClaimChecker } from '@/components/claim-checker';
 import { useLanguage } from '@/components/language-context';
 
 export default function HomePage() {
-  const { lang, setLang, t } = useLanguage();
+  const { lang, t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col font-sans">
@@ -17,7 +17,7 @@ export default function HomePage() {
       <div className="bg-amber-50/80 border-b border-amber-200/80 px-4 py-2 text-xs text-amber-950 font-medium">
         <div className="mx-auto max-w-6xl w-full flex items-center gap-2.5 overflow-hidden">
           <span className="flex-shrink-0 inline-flex items-center gap-1 rounded bg-[#C2410C] text-white px-2 py-0.5 font-bold uppercase tracking-wider text-[10px]">
-            <span>📢</span> {lang === 'en-IN' ? 'Official Gazette Notice' : 'आधिकारिक सूचना'}
+            <span>📢</span> {lang === 'en-IN' ? 'Demo notice' : 'डेमो सूचना'}
           </span>
           <div className="truncate text-[11px] sm:text-xs text-amber-900">
             {t.flashNotice}
@@ -33,7 +33,7 @@ export default function HomePage() {
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#15803D]" />
                 <span className="text-xs font-bold text-[#15803D] uppercase tracking-wider">
-                  {lang === 'en-IN' ? 'Verified Statistical Audit: ECI Benchmark' : 'सत्यापित सांख्यिकीय बेंचमार्क: ECI Roll Audit'}
+                  {lang === 'en-IN' ? 'Historical benchmark' : 'पिछला सांख्यिकीय बेंचमार्क'}
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-[#0F2C59] mt-1 tracking-tight">
@@ -66,37 +66,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* 3.5 Official Blockchain Roll Integrity Strip (Clean Light Registry) */}
-      <div className="bg-slate-100 border-b border-slate-200 py-2.5 px-4 text-slate-800">
-        <div className="mx-auto max-w-6xl flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#15803D]" />
-            <span className="font-bold text-[#0F2C59]">
-              ⛓️ {lang === 'en-IN' ? 'Cryptographic Roll Integrity Register (Polygon Amoy PoS)' : 'ब्लॉकचेन रोल सत्यनिष्ठा रजिस्टर (Polygon Amoy PoS)'}
-            </span>
-            <span className="hidden md:inline text-slate-400">|</span>
-            <span className="hidden md:inline text-slate-600 text-[11px]">
-              {lang === 'en-IN' ? '15,308 elector records mathematically sealed in Merkle Tree' : '15,308 मतदाता रिकॉर्ड मर्कल ट्री द्वारा ऑन-चेन प्रमाणित'}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 font-mono text-[11px]">
-            <span className="text-slate-500 text-[10px] font-sans font-semibold uppercase">Merkle Root:</span>
-            <span className="text-slate-900 font-bold bg-white px-2 py-0.5 rounded border border-slate-300 text-[10px]">
-              0x9e4b7c1a...9e2f
-            </span>
-            <a
-              href="https://amoy.polygonscan.com/address/0x71C94B2E0a7D53b7A89Ce7B0568B7A19F8a9942B"
-              target="_blank"
-              rel="noreferrer"
-              className="text-[#0F2C59] hover:underline font-bold text-[10px] ml-1"
-            >
-              {lang === 'en-IN' ? 'Verify on Explorer ↗' : 'एक्सप्लोरर सत्यापन ↗'}
-            </a>
-          </div>
-        </div>
-      </div>
 
       {/* 4. Main Body: Citizen Claim Verification Portal */}
       <main className="flex-1 mx-auto max-w-4xl w-full px-4 py-8">
@@ -178,7 +147,7 @@ export default function HomePage() {
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-300 gap-2">
             <div>
-              Designed for Election Commission of India / State Election Commissions Hackathon
+              Independent hackathon prototype
             </div>
             <div>
               विधिक संदर्भ: लोक प्रतिनिधित्व अधिनियम 1950 एवं निर्वाचक रजिस्ट्रीकरण नियम 1960

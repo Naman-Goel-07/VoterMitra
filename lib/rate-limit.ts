@@ -9,12 +9,17 @@ export function rateLimit(key: string, limit: number, windowMs: number): boolean
     hits.set(key, recent);
     return false;
   }
+  if (!hits.has(key) && hits.size >= 10_000) {
+    for (const [candidate, times] of hits) {
+      if (times.at(-1)! <= now - 60_000) hits.delete(candidate);
+    }
+    if (hits.size >= 10_000) return false;
+  }
   recent.push(now);
   hits.set(key, recent);
-  if (hits.size > 10_000) hits.clear(); // crude memory cap
   return true;
 }
 
-export function clientIp(req: Request): string {
+export function clientIp(req: Pick<Request, 'headers'>): string {
   return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
 }

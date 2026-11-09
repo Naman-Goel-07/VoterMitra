@@ -2,7 +2,6 @@
 
 import { useActionState } from 'react';
 import { login, type LoginState } from './actions';
-import { ROLES } from '@/lib/labels';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -24,45 +23,30 @@ export default function LoginPage() {
               ⚖
             </div>
             <h1 className="text-base sm:text-lg font-black text-[#0F2C59] mt-3 tracking-tight">
-              भारत निर्वाचन आयोग
+              मतदाता मित्र
             </h1>
             <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              ELECTION COMMISSION OF INDIA
+              VoterMitra
             </div>
             <div className="text-xs font-bold text-[#D97706] mt-1">
               मतदाता मित्र : निर्वाचन अधिकारी नियंत्रण कक्ष
             </div>
             <p className="text-[10px] text-slate-500 font-medium mt-0.5">
-              ERO &amp; Field Auditor Statutory Review Console (Restricted Access)
+              Restricted reviewer console
             </p>
           </div>
 
           <form action={formAction} className="mt-6 space-y-4">
             <label className="block">
-              <span className="text-xs font-bold text-slate-700">अधिकारी का नाम (Officer Name)</span>
+              <span className="text-xs font-bold text-slate-700">समीक्षक पासकोड (Reviewer Passcode)</span>
               <input
-                name="name"
+                name="passcode"
+                type="password"
+                autoComplete="current-password"
                 required
-                defaultValue="Electoral Registration Officer"
-                placeholder="उदा. राजेश कुमार"
-                className="mt-1 w-full rounded border border-slate-300 bg-white p-2.5 text-xs font-semibold text-slate-900 focus:border-[#0F2C59] focus:outline-none transition shadow-2xs"
+                maxLength={256}
+                className="mt-1 w-full rounded border border-slate-300 bg-white p-2.5 text-xs text-slate-900 focus:border-[#0F2C59] focus:outline-none"
               />
-            </label>
-
-            <label className="block">
-              <span className="text-xs font-bold text-slate-700">पदनाम / भूमिका (Designation &amp; Role)</span>
-              <select
-                name="role"
-                required
-                defaultValue="Senior Electoral Officer"
-                className="mt-1 w-full rounded border border-slate-300 bg-white p-2.5 text-xs font-semibold text-slate-900 focus:border-[#0F2C59] focus:outline-none transition shadow-2xs"
-              >
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
             </label>
 
             <button

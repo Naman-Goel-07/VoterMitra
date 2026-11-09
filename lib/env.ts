@@ -1,58 +1,29 @@
 import 'server-only';
 import { z } from 'zod';
+import { ROLES } from './labels';
 
-export const EnvSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+const optionalString = z.string().trim().min(1).optional();
+const optionalSetting = <T>(schema: z.ZodType<T>, value?: string) =>
+  schema.safeParse(value?.trim() || undefined).data;
 
-  // PostgreSQL Database & Supabase
-  DATABASE_URL: z.string().optional(),
-  NEXT_PUBLIC_SUPABASE_URL: z.string().optional(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
-
-  // Gnani Voice AI (Vachana STT / TTS)
-  GNANI_API_KEY: z.string().optional(),
-
-  // Google Gemini AI
-  GEMINI_API_KEY: z.string().optional(),
-
-  // Telegram Bot
-  TELEGRAM_BOT_TOKEN: z.string().optional(),
-  TELEGRAM_SECRET_TOKEN: z.string().optional(),
-  TELEGRAM_BOT_USERNAME: z.string().default('VoterMitrabot'),
-
-  // Application & Session Security
-  DEV_ROUTES_SECRET: z.string().default('votermitra-dev-secret'),
-  SESSION_SECRET: z.string().default('votermitra-super-secret-session-key-32chars'),
-  BENCHMARK_PLANTED_TOTAL: z.coerce.number().int().default(40),
-  PUBLIC_BASE_URL: z.string().default('https://voter-mitra-hack.vercel.app'),
-});
-
-export type Env = z.infer<typeof EnvSchema>;
-
-let cachedEnv: Env | null = null;
-
-export function env(): Env {
-  if (cachedEnv) return cachedEnv;
-
-  const parsed = EnvSchema.safeParse(process.env);
-  if (!parsed.success) {
-    return {
-      NODE_ENV: (process.env.NODE_ENV as Env['NODE_ENV']) || 'production',
-      DATABASE_URL: process.env.DATABASE_URL,
-      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      GNANI_API_KEY: process.env.GNANI_API_KEY,
-      GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-      TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
-      TELEGRAM_SECRET_TOKEN: process.env.TELEGRAM_SECRET_TOKEN,
-      TELEGRAM_BOT_USERNAME: process.env.TELEGRAM_BOT_USERNAME || 'VoterMitrabot',
-      DEV_ROUTES_SECRET: process.env.DEV_ROUTES_SECRET || 'votermitra-dev-secret',
-      SESSION_SECRET: process.env.SESSION_SECRET || 'votermitra-super-secret-session-key-32chars',
-      BENCHMARK_PLANTED_TOTAL: Number(process.env.BENCHMARK_PLANTED_TOTAL) || 40,
-      PUBLIC_BASE_URL: process.env.PUBLIC_BASE_URL || 'https://voter-mitra-hack.vercel.app',
-    };
-  }
-
-  cachedEnv = parsed.data;
-  return cachedEnv;
+export function env() {
+  return {
+    DATABASE_URL: optionalSetting(optionalString, process.env.DATABASE_URL),
+    GNANI_API_KEY: optionalSetting(optionalString, process.env.GNANI_API_KEY),
+    GEMINI_API_KEY: optionalSetting(optionalString, process.env.GEMINI_API_KEY),
+    TELEGRAM_BOT_TOKEN: optionalSetting(optionalString, process.env.TELEGRAM_BOT_TOKEN),
+    TELEGRAM_SECRET_TOKEN: optionalSetting(
+      z.string().regex(/^[A-Za-z0-9_-]{32,256}$/),
+      process.env.TELEGRAM_SECRET_TOKEN,
+    ),
+    DASHBOARD_REVIEWER_NAME: optionalSetting(z.string().min(2).max(60), process.env.DASHBOARD_REVIEWER_NAME),
+    DASHBOARD_REVIEWER_ROLE: optionalSetting(z.enum(ROLES), process.env.DASHBOARD_REVIEWER_ROLE),
+    DASHBOARD_PASSCODE: optionalSetting(z.string().min(16).max(256), process.env.DASHBOARD_PASSCODE),
+    SESSION_SECRET: optionalSetting(z.string().min(32), process.env.SESSION_SECRET),
+    BENCHMARK_PLANTED_TOTAL: optionalSetting(
+      z.coerce.number().int().nonnegative(),
+      process.env.BENCHMARK_PLANTED_TOTAL,
+    ),
+    PUBLIC_BASE_URL: optionalSetting(z.url({ protocol: /^https?$/ }), process.env.PUBLIC_BASE_URL),
+  };
 }

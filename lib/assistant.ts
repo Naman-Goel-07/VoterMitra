@@ -2,8 +2,7 @@ import 'server-only';
 import { getPartFlags, getPartStats, listConstituencies, logClaimAudit } from './queries';
 import type { BotLanguage } from './telegram/i18n';
 import { askGemini } from './gemini';
-import { getBlockchainReceipt, type VerificationReceipt } from './blockchain/merkle';
-import { searchElectorInDatabase, formatElectorSearchResponse } from './elector-search';
+import { searchElectors, formatElectorSearchResponse } from './elector-search.mjs';
 
 export type Verdict = 'VERIFIED' | 'DISPUTED' | 'NOT_PROVABLE';
 export type Confidence = 'HIGH' | 'MEDIUM' | 'LOW';
@@ -17,8 +16,6 @@ export interface AssistantAnswer {
   sources: string[];
   /** claim_audits row id, used for share links */
   auditId?: string;
-  /** Cryptographic On-Chain Proof */
-  blockchain?: VerificationReceipt;
 }
 
 export interface AnswerOptions {
@@ -45,40 +42,25 @@ export async function answerQuestion(
   options: AnswerOptions = { source: 'WEB_UI' },
 ): Promise<AssistantAnswer> {
   const startTime = Date.now();
+  const searchResult = searchElectors(question);
+  if (searchResult.totalMatches > 0 || searchResult.type === 'EPIC') {
+    const formatted = formatElectorSearchResponse(searchResult, lang);
+    return {
+      verdict: searchResult.totalMatches > 0 ? 'VERIFIED' : 'NOT_PROVABLE',
+      confidence: 'HIGH',
+      summary: formatted.text,
+      spokenSummary: formatted.spokenSummary,
+      reasoning: ['Lookup used a fictional electoral-roll fixture for demonstration.'],
+      sources: ['VoterMitra demo fixture'],
+    };
+  }
+
   const constituencies = await listConstituencies();
   const defaultAc = constituencies[0]?.acNo ?? 13;
   const partNo = extractPartNumber(question) ?? 1;
   const claimedCount = extractClaimedCount(question);
-  const blockchainReceipt = getBlockchainReceipt(question, defaultAc);
 
-  // 0. Elector & Voter ID Search Priority
-  const isElectorQuery =
-    /(?:is|kya|check|search|verify|find|voter|roll|naam|suchi|status|क्या|नाम|सूची|मतदाता)\s+/iu.test(question) ||
-    /[a-z]{3}\s*[0-9]{7}/i.test(question) ||
-    /dl\/[0-9]{2}\/[0-9]{3}\/[0-9]+/i.test(question) ||
-    /jindal|sharma|kumar|singh|verma|devi|chandhok|panwar|gupta|goel|bansal|aggarwal|kain|mittal|जिंदल|शर्मा|कुमार|सिंह|वर्मा|देवी|गुप्ता|गोयल|बंसल|कैन/iu.test(question);
-
-  if (isElectorQuery) {
-    const searchResult = await searchElectorInDatabase(question);
-    if (searchResult.totalMatches > 0 || /(?:present|in\s+the|registered|list|me|suchi|में|सूची|दर्ज)/iu.test(question)) {
-      const formatted = formatElectorSearchResponse(searchResult, lang);
-      return {
-        verdict: searchResult.totalMatches > 0 ? 'VERIFIED' : 'NOT_PROVABLE',
-        confidence: 'HIGH',
-        summary: formatted.text,
-        spokenSummary: formatted.spokenSummary,
-        reasoning: [
-          'Audited Electoral Roll database match across AC 6, 13, 44, 58',
-          'DPDP Act & ECI statutory privacy masking applied to sensitive identifiers',
-          'Anchored to Master Merkle Root on Polygon Amoy PoS (Block #14,892,103)',
-        ],
-        sources: ['Delhi Electoral Roll Database AC 6, 13, 44, 58', 'ECI Form 6/8 Registry'],
-        blockchain: blockchainReceipt,
-      };
-    }
-  }
-
-  // 1. First Priority: Gemini 2.5 Flash Grounded Intelligent Engine
+  // Try Gemini before the deterministic summary.
   try {
     const geminiResult = await askGemini(question, lang);
     if (geminiResult && geminiResult.summary) {
@@ -112,7 +94,6 @@ export async function answerQuestion(
         reasoning: geminiResult.reasoning,
         sources: geminiResult.sources || ['ECI Electoral Roll Rules 1960', 'Delhi Roll Benchmark'],
         auditId,
-        blockchain: blockchainReceipt,
       };
     }
   } catch (geminiErr) {
@@ -131,7 +112,6 @@ export async function answerQuestion(
   const flags = await getPartFlags({ acNo: defaultAc, partNo });
 
   const isDeletionQuery = /कट|हटे|वगळ|delet|remov/i.test(question);
-  const isAdditionQuery = /जोड़|शामिल|समाविष्ट|add/i.test(question);
   const isReasonQuery = /क्यों|का|why|reason/i.test(question);
 
   if (!stats) {
@@ -152,9 +132,9 @@ export async function answerQuestion(
 
     if (lang === 'hi-IN') {
       if (flags.length > 0) {
-        summary = `पार्ट ${partNo} में ${flags.length} सांख्यिकीय फ्लैग दर्ज हैं: ${flags.map((f) => f.primaryFinding).join('; ')}`;
-        spokenSummary = `पार्ट ${partNo} में मुख्य बदलाव सांख्यिकीय पैटर्न के रूप में दर्ज हैं, जिसमें ${flags[0].primaryFinding}`;
-        reasoning.push(...flags.map((f) => `${f.anomalyType}: ${f.primaryFinding} (विश्वास: ${Math.round(f.confidenceScore * 100)}%)`));
+        summary = `पार्ट ${partNo} में ${flags.length} सांख्यिकीय फ्लैग दर्ज हैं: ${flags.map((f) => f.anomalyType).join('; ')}`;
+        spokenSummary = `पार्ट ${partNo} में मुख्य बदलाव सांख्यिकीय पैटर्न के रूप में दर्ज हैं, जिसमें ${flags[0].anomalyType}`;
+        reasoning.push(...flags.map((f) => `${f.anomalyType} (विश्वास: ${Math.round(f.confidenceScore * 100)}%)`));
       } else {
         summary = `पार्ट ${partNo} में हटाए या जोड़े गए नाम नियमित संशोधन प्रक्रिया के अंतर्गत हैं, कोई असामान्यता दर्ज नहीं है।`;
         spokenSummary = `पार्ट ${partNo} में बदलाव नियमित संशोधन प्रक्रिया के अंतर्गत हैं।`;
@@ -162,7 +142,7 @@ export async function answerQuestion(
       }
     } else {
       summary = flags.length > 0
-        ? `Part ${partNo} has ${flags.length} anomaly flags on record: ${flags.map((f) => f.primaryFinding).join('; ')}`
+        ? `Part ${partNo} has ${flags.length} anomaly flags on record: ${flags.map((f) => f.anomalyType).join('; ')}`
         : `Part ${partNo} removals and additions are within normal seasonal revision variation.`;
       spokenSummary = summary;
       reasoning.push(`Baseline: ${stats.v1Count}, Revised: ${stats.v2Count}`);
@@ -174,7 +154,7 @@ export async function answerQuestion(
       confidence = 'HIGH';
       summary = lang === 'hi-IN'
         ? `पार्ट ${partNo} में आधिकारिक तौर पर ${stats.removedCount} मतदाताओं के नाम विलोपित दर्ज हैं। दावा ${match ? 'सत्यापित' : 'गलत'} है।`
-        : `Part ${partNo} officially records ${stats.removedCount} deletions. The claimed number of ${claimedCount} is ${match ? 'verified' : 'disputed'}.`;
+        : `Part ${partNo} records in the loaded dataset ${stats.removedCount} deletions. The claimed number of ${claimedCount} is ${match ? 'verified' : 'disputed'}.`;
       spokenSummary = summary;
       reasoning.push(`प्रारूप v1 मतदाता: ${stats.v1Count}, अंतिम v2 मतदाता: ${stats.v2Count}`);
     } else {
@@ -191,7 +171,7 @@ export async function answerQuestion(
     confidence = 'HIGH';
     summary = lang === 'hi-IN'
       ? `पार्ट ${partNo} में कुल ${stats.v2Count} मतदाता पंजीकृत हैं (मूल सूची में ${stats.v1Count} थे)।`
-      : `Part ${partNo} has ${stats.v2Count} electors currently registered (${stats.v1Count} in draft roll).`;
+      : `Part ${partNo} has ${stats.v2Count} electors in the loaded revision (${stats.v1Count} in draft roll).`;
     spokenSummary = summary;
     reasoning.push(`परिवर्धन: +${stats.addedCount}, विलोपन: -${stats.removedCount}`);
   }
@@ -203,7 +183,6 @@ export async function answerQuestion(
     spokenSummary,
     reasoning,
     sources,
-    blockchain: blockchainReceipt,
   };
 
   try {

@@ -16,7 +16,7 @@ interface DashboardOverviewViewProps {
 
 export function DashboardOverviewView({ overview: o, benchmark: b }: DashboardOverviewViewProps) {
   const { t } = useLanguage();
-  const maxType = Math.max(0, ...o.byType.map((item: any) => item.total));
+  const maxType = Math.max(0, ...o.byType.map((item) => item.total));
 
   return (
     <div className="space-y-6">
@@ -97,7 +97,7 @@ export function DashboardOverviewView({ overview: o, benchmark: b }: DashboardOv
           </div>
           <div className="mt-4 space-y-3.5">
             {o.byType.length === 0 && <p className="text-xs text-slate-500 italic">No anomaly patterns recorded.</p>}
-            {o.byType.map((item: any) => (
+            {o.byType.map((item) => (
               <Link key={item.anomaly_type} href={`/dashboard/queue?type=${item.anomaly_type}&status=ALL`} className="block group">
                 <div className="flex justify-between text-xs font-semibold text-slate-700 group-hover:text-[#0F2C59]">
                   <span>{ANOMALY_LABELS[item.anomaly_type] ?? item.anomaly_type}</span>
@@ -153,7 +153,7 @@ export function DashboardOverviewView({ overview: o, benchmark: b }: DashboardOv
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
-                  {b.byType.map((r: any) => (
+                  {b.byType.map((r) => (
                     <tr key={r.anomaly_type} className="hover:bg-slate-50">
                       <td className="py-2 px-2.5 font-medium text-slate-800">{ANOMALY_LABELS[r.anomaly_type] ?? r.anomaly_type}</td>
                       <td className="py-2 px-2 text-right tabular-nums text-slate-600">{r.planted}</td>
@@ -181,7 +181,7 @@ export function DashboardOverviewView({ overview: o, benchmark: b }: DashboardOv
             {o.topFlags.length === 0 && (
               <li className="py-3 text-xs text-slate-500 italic text-center">No high-priority flags awaiting review.</li>
             )}
-            {o.topFlags.map((f: any) => (
+            {o.topFlags.map((f) => (
               <li key={f.id}>
                 <Link href={`/dashboard/queue/${f.id}`} className="flex items-center gap-3 py-2.5 hover:bg-slate-50 rounded px-2 transition">
                   <SeverityBadge severity={f.severity} />
@@ -208,7 +208,7 @@ export function DashboardOverviewView({ overview: o, benchmark: b }: DashboardOv
                 नागरिक पोर्टल पर पूछे गए प्रश्नों का सत्यापन इतिहास यहां प्रदर्शित होगा।
               </li>
             )}
-            {o.recentClaims.map((c: any) => (
+            {o.recentClaims.map((c) => (
               <li key={c.id}>
                 <Link href={`/c/${c.id}`} className="block rounded-lg p-3 hover:bg-slate-50 border border-slate-200 transition">
                   <div className="flex items-center gap-2 text-xs">
